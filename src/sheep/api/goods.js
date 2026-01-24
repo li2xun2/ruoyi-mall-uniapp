@@ -4,7 +4,7 @@ export default {
   // 商品详情
   detail: (id, params = {}) =>
     request({
-      url: 'no-auth/product/detail/' + id,
+      url: '/no-auth/product/detail/' + id,
       method: 'GET',
       custom: {
         showLoading: false,
@@ -15,7 +15,7 @@ export default {
     // 商品列表
     list: (data, params) =>
         request({
-            url: 'no-auth/product/list',
+            url: '/no-auth/product/list',
             method: 'post',
             data,
             params,
@@ -28,7 +28,7 @@ export default {
   // 商品查询
   ids: (params = {}) =>
     request({
-      url: 'goods/goods/ids',
+      url: '/goods/goods/ids',
       method: 'GET',
       params,
       custom: {
@@ -40,7 +40,7 @@ export default {
   // 商品评价列表
   comment: (id, params = {}) =>
     request({
-      url: 'goods/comment/' + id,
+      url: '/goods/comment/' + id,
       method: 'GET',
       params,
       custom: {
@@ -51,7 +51,7 @@ export default {
   // 商品评价类型
   getType: (id) =>
     request({
-      url: 'goods/comment/getType/' + id,
+      url: '/goods/comment/getType/' + id,
       method: 'GET',
       custom: {
         showLoading: false,
@@ -62,7 +62,7 @@ export default {
   // 商品查询
   activity: (params = {}) =>
     request({
-      url: 'goods/goods/activity',
+      url: '/goods/goods/activity',
       method: 'GET',
       params,
       custom: {
@@ -72,7 +72,7 @@ export default {
     }),
   activityList: (params = {}) =>
     request({
-      url: 'goods/goods/activityList',
+      url: '/goods/goods/activityList',
       method: 'GET',
       params,
     }),

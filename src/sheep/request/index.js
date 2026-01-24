@@ -10,6 +10,9 @@ import $platform from '@/sheep/platform';
 import {showAuthModal} from '@/sheep/hooks/useModal';
 import sheep from '@/sheep';
 
+// 创建一个全局的 userStore 实例，这样请求拦截器和响应拦截器就会使用同一个实例
+const userStore = $store('user');
+
 const options = {
   // 显示操作成功消息 默认不显示
   showSuccess: false,
@@ -69,13 +72,33 @@ const http = new Request({
  */
 http.interceptors.request.use(
   (config) => {
-    if (config.custom.auth && !$store('user').isLogin) {
-      if ($platform.name === 'WechatMiniProgram') {
-        showAuthModal('wechatMiniLogin')
+    console.log('Request URL:', config.url);
+    console.log('Request Method:', config.method);
+    console.log('Request Data:', config.data);
+    console.log('Request Auth:', config.custom.auth);
+    console.log('Is Login:', userStore.isLogin);
+    
+    if (config.custom.auth && !userStore.isLogin) {
+      // 打印 userStore 实例，以便确定问题所在
+      console.log('Auth required but not logged in, rejecting request');
+      console.log('User store:', userStore);
+      console.log('User store state:', userStore.$state);
+      // 特殊处理：如果请求的是获取会员信息，并且本地存储中有 token，就允许这个请求通过
+      const token = uni.getStorageSync('token');
+      if (config.url.includes('h5/member/info') && token) {
+        console.log('Auth required but token exists in storage, allowing request');
+        console.log('Token in storage:', token);
+        // 手动设置 token 到请求头中
+        config.header['Authorization'] = token;
       } else {
-        showAuthModal('smsLogin')
+        console.log('Auth required but not logged in, rejecting request');
+        if ($platform.name === 'WechatMiniProgram') {
+          showAuthModal('wechatMiniLogin')
+        } else {
+          showAuthModal('smsLogin')
+        }
+        return Promise.reject();
       }
-      return Promise.reject();
     }
     if (config.custom.showLoading) {
       LoadingInstance.count++;
@@ -90,9 +113,11 @@ http.interceptors.request.use(
     }
     const token = uni.getStorageSync('token');
     if (token) config.header['Authorization'] = token;
+    console.log('Request Headers:', config.header);
     return config;
   },
   (error) => {
+    console.log('Request Error:', error);
     return Promise.reject(error);
   },
 );
@@ -103,13 +128,43 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   (response) => {
     // 自动设置登陆令牌
+    console.log('Response URL:', response.config.url);
+    console.log('Response Full:', response);
+    console.log('Response Data:', response.data);
     if (response.config.url.includes('h5/account/login') ||
         response.config.url.includes('h5/sms/login') ||
         response.config.url.includes('h5/wechat/login') ||
         response.config.url.includes('h5/register') ||
+        response.config.url.includes('h5/account/register') ||
         response.config.url.includes('no-auth/wechat/getWechatUserAuth')
         ) {
-      $store('user').setToken(response.data?.token);
+      // 检查响应结构，支持新的 AjaxResult 格式
+      console.log('Checking for token in response...');
+      console.log('response.data?.data?.token:', response.data?.data?.token);
+      console.log('response.data?.token:', response.data?.token);
+      console.log('URL includes login:', response.config.url.includes('login'));
+      console.log('URL includes register:', response.config.url.includes('register'));
+      
+      // 直接从 response.data 中获取 token，不管结构如何
+      let token = null;
+      if (response.data?.token) {
+        token = response.data.token;
+      } else if (response.data?.data?.token) {
+        token = response.data.data.token;
+      }
+      
+      console.log('Extracted token:', token);
+      
+      if (token) {
+        console.log('Setting token:', token);
+        console.log('Before setToken - isLogin:', userStore.isLogin);
+        const result = userStore.setToken(token);
+        console.log('setToken result:', result);
+        console.log('After setToken - isLogin:', userStore.isLogin);
+        console.log('Token in storage:', uni.getStorageSync('token'));
+      } else {
+        console.log('No token found in response');
+      }
     } else if (response.config.url.includes('no-auth/wechat/getSessionId')) {
       $store('user').setToken(response.data?.data?.token);
     }

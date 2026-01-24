@@ -42,7 +42,7 @@ const user = defineStore({
     companyList: [],
     companyMap: {},
     userInfo: clone(defaultUserInfo), // 用户信息
-    isLogin: !!uni.getStorageSync('token'), // 登录状态
+    isLogin: false, // 登录状态，初始为 false，只有当调用 setToken 方法时才会更新
     numData: cloneDeep(defaultNumData), // 用户其他数据
     agentInfo: {}, // 分销商信息
     lastUpdateTime: 0, // 上次更新时间

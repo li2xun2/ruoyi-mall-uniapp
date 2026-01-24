@@ -1,16 +1,14 @@
 // 开发环境配置
 export let baseUrl;
 export let version;
-if (process.env.NODE_ENV === 'development') {
-  baseUrl = import.meta.env.SHOPRO_DEV_BASE_URL;
-} else {
-  baseUrl = import.meta.env.SHOPRO_BASE_URL;
-}
-version = import.meta.env.SHOPRO_VERSION;
+// 直接使用本地开发环境地址，确保所有请求都走本地后端服务
+baseUrl = 'http://localhost:8080/';
+version = 'v1.8.1';
 console.log(`[Shopro ${version}]  https://www.sheepjs.com/`);
-export const apiPath = import.meta.env.SHOPRO_API_PATH;
+console.log(`[Base URL] ${baseUrl}`);
+export const apiPath = '';
 
-export const staticUrl = import.meta.env.SHOPRO_STATIC_URL;
+export const staticUrl = 'local';
 
 export default {
   baseUrl,

@@ -36,6 +36,19 @@ export default {
       custom: {
         showSuccess: true,
         loadingMsg: '登录中',
+        auth: false,
+      },
+    }),
+  // 账号注册
+  accountRegister: (params) =>
+    request({
+      url: '/h5/account/register',
+      method: 'post',
+      data: params,
+      custom: {
+        showSuccess: true,
+        loadingMsg: '注册中',
+        auth: false,
       },
     }),
   // 短信登录
