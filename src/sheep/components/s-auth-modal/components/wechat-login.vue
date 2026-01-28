@@ -132,6 +132,15 @@ const handleLogin = async () => {
           title: '登录成功',
           icon: 'success'
         });
+        // 兜底：若拦截器未及时写入 token，这里手动写入，避免后续 getInfo 被拦截
+        const token =
+          res?.token ||
+          res?.data?.token ||
+          res?.data?.data?.token ||
+          (typeof res?.data === 'string' ? res.data : null);
+        if (token) {
+          sheep.$store('user').setToken(token);
+        }
         // 登录成功后获取用户信息
         sheep.$store('user').getInfo();
         closeAuthModal();

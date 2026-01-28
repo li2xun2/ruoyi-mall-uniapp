@@ -10,8 +10,47 @@ import $platform from '@/sheep/platform';
 import {showAuthModal} from '@/sheep/hooks/useModal';
 import sheep from '@/sheep';
 
-// 创建一个全局的 userStore 实例，这样请求拦截器和响应拦截器就会使用同一个实例
+// 创建全局的 userStore 实例，确保请求拦截器和响应拦截器使用同一个实例
 const userStore = $store('user');
+
+// ========= 登录等待机制（解决：登录成功但鉴权请求被提前拦截） =========
+let loginDeferred = null;
+
+function ensureLoginDeferred() {
+  if (loginDeferred) return loginDeferred;
+  let resolve;
+  let reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  loginDeferred = { promise, resolve, reject };
+  return loginDeferred;
+}
+
+function clearLoginDeferred() {
+  loginDeferred = null;
+}
+
+function notifyLoginSuccess() {
+  if (!loginDeferred) return;
+  loginDeferred.resolve(true);
+  clearLoginDeferred();
+}
+
+function notifyLoginFail(error) {
+  if (!loginDeferred) return;
+  loginDeferred.reject(error);
+  clearLoginDeferred();
+}
+
+function waitForLogin({ timeoutMs = 30000 } = {}) {
+  const { promise } = ensureLoginDeferred();
+  const timeoutPromise = new Promise((_, rej) => {
+    setTimeout(() => rej(new Error('login timeout')), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]);
+}
 
 const options = {
   // 显示操作成功消息 默认不显示
@@ -72,34 +111,62 @@ const http = new Request({
  */
 http.interceptors.request.use(
   (config) => {
-    console.log('Request URL:', config.url);
-    console.log('Request Method:', config.method);
-    console.log('Request Data:', config.data);
-    console.log('Request Auth:', config.custom.auth);
-    console.log('Is Login:', userStore.isLogin);
-    
-    if (config.custom.auth && !userStore.isLogin) {
-      // 打印 userStore 实例，以便确定问题所在
-      console.log('Auth required but not logged in, rejecting request');
-      console.log('User store:', userStore);
-      console.log('User store state:', userStore.$state);
-      // 特殊处理：如果请求的是获取会员信息，并且本地存储中有 token，就允许这个请求通过
-      const token = uni.getStorageSync('token');
-      if (config.url.includes('h5/member/info') && token) {
-        console.log('Auth required but token exists in storage, allowing request');
-        console.log('Token in storage:', token);
-        // 手动设置 token 到请求头中
-        config.header['Authorization'] = token;
-      } else {
-        console.log('Auth required but not logged in, rejecting request');
-        if ($platform.name === 'WechatMiniProgram') {
-          showAuthModal('wechatMiniLogin')
-        } else {
-          showAuthModal('smsLogin')
-        }
-        return Promise.reject();
-      }
+    console.log('===== 请求拦截器 =====');
+    console.log('请求 URL:', config.url);
+    console.log('请求方法:', config.method);
+    console.log('请求数据:', config.data);
+    console.log('是否需要认证:', config.custom.auth);
+    const token = uni.getStorageSync('token');
+    console.log('从本地存储读取到的 token:', token);
+    console.log('userStore.isLogin:', userStore.isLogin);
+    console.log('是否有 token:', !!token);
+
+    // 若本地已有 token，但 store 尚未恢复登录态，则先同步登录态，避免误拦截
+    if (token && !userStore.isLogin) {
+      console.log('本地有 token，但 userStore.isLogin 为 false，同步登录态');
+      userStore.isLogin = true;
+      console.log('同步后 userStore.isLogin:', userStore.isLogin);
     }
+    
+    // 特殊处理：如果请求的是获取会员信息，并且本地存储中有 token，就允许这个请求通过
+    if (config.custom.auth && config.url.includes('h5/member/info') && token) {
+      console.log('请求 /h5/member/info 需要认证，本地存储中有 token，允许请求通过');
+      config.header['Authorization'] = token;
+      console.log('设置请求头 Authorization:', token);
+      return config;
+    }
+    
+    // 以 token 为准判断登录态（避免 isLogin 未及时更新/不同实例导致误判）
+    const isLoggedIn = userStore.isLogin || !!token;
+    console.log('最终判断是否登录:', isLoggedIn);
+    if (config.custom.auth && !isLoggedIn) {
+      console.log('请求需要认证，但未登录，拒绝请求');
+      if ($platform.name === 'WechatMiniProgram') {
+        console.log('显示微信小程序登录弹窗');
+        showAuthModal('wechatMiniLogin')
+      } else {
+        console.log('显示短信登录弹窗');
+        showAuthModal('smsLogin')
+      }
+      // 等待登录成功后再继续发起本次请求（避免登录接口已成功但本次鉴权请求被提前拦截）
+      console.log('等待登录成功后再继续发起本次请求');
+      return waitForLogin({ timeoutMs: 30000 })
+        .then(() => {
+          const newToken = uni.getStorageSync('token');
+          console.log('登录成功后，从本地存储读取到的新 token:', newToken);
+          if (newToken) {
+            config.header['Authorization'] = newToken;
+            console.log('设置请求头 Authorization:', newToken);
+          }
+          return config;
+        })
+        .catch((e) => {
+          console.log('等待登录超时或失败，终止请求:', e);
+          // 仍未登录或超时，则终止本次请求
+          return Promise.reject(e);
+        });
+    }
+
     if (config.custom.showLoading) {
       LoadingInstance.count++;
       LoadingInstance.count === 1 &&
@@ -111,13 +178,12 @@ http.interceptors.request.use(
           },
         });
     }
-    const token = uni.getStorageSync('token');
     if (token) config.header['Authorization'] = token;
-    console.log('Request Headers:', config.header);
+    console.log('请求头:', config.header);
     return config;
   },
   (error) => {
-    console.log('Request Error:', error);
+    console.log('请求错误:', error);
     return Promise.reject(error);
   },
 );
@@ -128,9 +194,10 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   (response) => {
     // 自动设置登陆令牌
-    console.log('Response URL:', response.config.url);
-    console.log('Response Full:', response);
-    console.log('Response Data:', response.data);
+    console.log('===== 响应拦截器 =====');
+    console.log('响应 URL:', response.config.url);
+    console.log('响应完整数据:', response);
+    console.log('响应 data:', response.data);
     if (response.config.url.includes('h5/account/login') ||
         response.config.url.includes('h5/sms/login') ||
         response.config.url.includes('h5/wechat/login') ||
@@ -139,34 +206,72 @@ http.interceptors.response.use(
         response.config.url.includes('no-auth/wechat/getWechatUserAuth')
         ) {
       // 检查响应结构，支持新的 AjaxResult 格式
-      console.log('Checking for token in response...');
+      console.log('===== 检查响应中的 token =====');
+      console.log('响应 URL:', response.config.url);
+      console.log('响应完整数据:', response);
+      console.log('响应 data:', response.data);
       console.log('response.data?.data?.token:', response.data?.data?.token);
       console.log('response.data?.token:', response.data?.token);
-      console.log('URL includes login:', response.config.url.includes('login'));
-      console.log('URL includes register:', response.config.url.includes('register'));
+      console.log('URL 包含 login:', response.config.url.includes('login'));
+      console.log('URL 包含 register:', response.config.url.includes('register'));
       
       // 直接从 response.data 中获取 token，不管结构如何
       let token = null;
+      // 1) { token: 'xxx' }
       if (response.data?.token) {
         token = response.data.token;
-      } else if (response.data?.data?.token) {
+        console.log('从 response.data.token 获取到 token:', token);
+      }
+      // 2) { data: { token: 'xxx' } }
+      else if (response.data?.data?.token) {
         token = response.data.data.token;
+        console.log('从 response.data.data.token 获取到 token:', token);
+      }
+      // 3) { data: 'xxx' }  (RuoYi 常见：data 直接就是 token 字符串)
+      else if (typeof response.data?.data === 'string') {
+        token = response.data.data;
+        console.log('从 response.data.data 获取到 token:', token);
+      }
+      // 4) { data: { access_token: 'xxx' } } 等字段名兼容
+      else if (response.data?.data?.access_token) {
+        token = response.data.data.access_token;
+        console.log('从 response.data.data.access_token 获取到 token:', token);
+      } else if (response.data?.data?.accessToken) {
+        token = response.data.data.accessToken;
+        console.log('从 response.data.data.accessToken 获取到 token:', token);
       }
       
-      console.log('Extracted token:', token);
+      console.log('最终提取到的 token:', token);
       
       if (token) {
-        console.log('Setting token:', token);
-        console.log('Before setToken - isLogin:', userStore.isLogin);
-        const result = userStore.setToken(token);
-        console.log('setToken result:', result);
-        console.log('After setToken - isLogin:', userStore.isLogin);
-        console.log('Token in storage:', uni.getStorageSync('token'));
+        // 先强制写入本地，确保后续鉴权请求可放行并携带 Authorization
+        console.log('准备将 token 写入本地存储:', token);
+        uni.setStorageSync('token', token);
+        console.log('写入本地存储后，从本地存储读取 token:', uni.getStorageSync('token'));
+
+        // 再同步到 store（包含后续 loginAfter 的流程）
+        console.log('准备设置 token 到 userStore:', token);
+        console.log('设置前 userStore.isLogin:', userStore.isLogin);
+        try {
+          const result = userStore.setToken(token);
+          console.log('userStore.setToken 结果:', result);
+        } catch (e) {
+          console.log('userStore.setToken 失败，回退到直接设置 isLogin=true:', e);
+          userStore.isLogin = true;
+        }
+        console.log('设置后 userStore.isLogin:', userStore.isLogin);
+        console.log('从本地存储读取 token:', uni.getStorageSync('token'));
+        // 唤醒所有等待登录的鉴权请求
+        console.log('唤醒所有等待登录的鉴权请求');
+        notifyLoginSuccess();
       } else {
-        console.log('No token found in response');
+        console.log('响应中未找到 token');
       }
     } else if (response.config.url.includes('no-auth/wechat/getSessionId')) {
-      $store('user').setToken(response.data?.data?.token);
+      console.log('===== 处理 no-auth/wechat/getSessionId 响应 =====');
+      console.log('响应 data:', response.data);
+      console.log('准备设置 token:', response.data?.data?.token);
+      userStore.setToken(response.data?.data?.token);
     }
     response.config.custom.showLoading && closeLoading();
     const { data } = response
@@ -182,6 +287,8 @@ http.interceptors.response.use(
           errorMsg = '请先登录'
         }
         userStore.logout(true)
+        // 登录失效，唤醒等待队列（避免请求一直挂起）
+        notifyLoginFail(new Error('unauthorized'));
         // 获取当前页面栈数组
         const pages = getCurrentPages();
         // 获取数组中的最后一个元素，即当前页面

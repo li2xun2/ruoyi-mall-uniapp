@@ -127,6 +127,15 @@
           title: '登录成功',
           icon: 'success'
         });
+        // 兜底：确保 token 写入（避免后续鉴权请求被拦截）
+        const token =
+          res?.token ||
+          res?.data?.token ||
+          res?.data?.data?.token ||
+          (typeof res?.data === 'string' ? res.data : null);
+        if (token) {
+          userStore.setToken(token);
+        }
         // 登录成功后直接跳转到首页
         console.log('Login successful, redirecting to home page...');
         uni.switchTab({
