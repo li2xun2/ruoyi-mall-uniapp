@@ -95,14 +95,30 @@ export default {
         });
         return new Promise((resolve, reject) => {
             uni.uploadFile({
-                url: baseUrl + '/h5/file/upload',
+                url: baseUrl + 'common/upload',
                 filePath: file,
                 name: 'file',
                 header: {
                     Authorization: token,
                 },
                 success: (uploadFileRes) => {
-                    return resolve(uploadFileRes.data);
+                    try {
+                        console.log('上传结果：', uploadFileRes.data);
+                        const result = JSON.parse(uploadFileRes.data);
+                        if (result.code === 200) {
+                            // 适配后端返回格式
+                            const filePath = result.data || result.fileName;
+                            const fileUrl = baseUrl + filePath;
+                            console.log('上传成功，filePath：', filePath, 'fileUrl：', fileUrl);
+                            return resolve({ path: filePath, url: fileUrl });
+                        } else {
+                            console.log('上传失败，错误信息：', result.msg);
+                            return resolve(false);
+                        }
+                    } catch (e) {
+                        console.log('解析上传结果失败：', e);
+                        return resolve(false);
+                    }
                 },
                 fail: (error) => {
                     console.log('上传失败：', error);

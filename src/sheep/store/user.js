@@ -65,6 +65,8 @@ const user = defineStore({
       const data  = await userApi.profile();
       if (!data) return;
       this.userInfo = data;
+      // 获取到用户信息后，设置isLogin为true
+      this.isLogin = true;
 
       return Promise.resolve(data);
     },
@@ -105,13 +107,16 @@ const user = defineStore({
 
     // 更新用户相关信息 (手动限流 5秒之内不刷新)
     async updateUserData() {
-      if (!this.isLogin) {
+      const token = uni.getStorageSync('token');
+      // 如果没有token，重置用户数据
+      if (!token) {
         this.resetUserData();
         return;
       }
+      // 有token的情况下，即使isLogin为false，也尝试获取用户信息
       const nowTime = new Date().getTime();
       if (this.lastUpdateTime + 5000 > nowTime) return;
-      Promise.all([this.getInfo(),this.getNumData()])
+      await Promise.all([this.getInfo(),this.getNumData()]);
       this.lastUpdateTime = nowTime;
       return this.userInfo;
     },

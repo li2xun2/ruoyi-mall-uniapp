@@ -170,12 +170,15 @@
         }
         .sicon-back {
           font-size: 32rpx;
+          color: #333333;
         }
         .sicon-home {
           font-size: 32rpx;
+          color: #333333;
         }
         .sicon-more {
           font-size: 32rpx;
+          color: #333333;
         }
         .icon-button {
           width: 67rpx;

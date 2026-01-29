@@ -776,6 +776,23 @@
           }
         }
       ]
+    },
+    {
+      "root": "pages/member",
+      "pages": [
+        {
+          "path": "info-set",
+          "style": {
+            "navigationBarTitleText": "个人信息设置"
+          },
+          "meta": {
+            "auth": true,
+            "sync": true,
+            "title": "个人信息设置",
+            "group": "用户中心"
+          }
+        }
+      ]
     }
   ],
   "globalStyle": {

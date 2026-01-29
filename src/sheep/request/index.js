@@ -10,9 +10,6 @@ import $platform from '@/sheep/platform';
 import {showAuthModal} from '@/sheep/hooks/useModal';
 import sheep from '@/sheep';
 
-// 创建全局的 userStore 实例，确保请求拦截器和响应拦截器使用同一个实例
-const userStore = $store('user');
-
 // ========= 登录等待机制（解决：登录成功但鉴权请求被提前拦截） =========
 let loginDeferred = null;
 
@@ -118,6 +115,8 @@ http.interceptors.request.use(
     console.log('是否需要认证:', config.custom.auth);
     const token = uni.getStorageSync('token');
     console.log('从本地存储读取到的 token:', token);
+    
+    const userStore = $store('user');
     console.log('userStore.isLogin:', userStore.isLogin);
     console.log('是否有 token:', !!token);
 
@@ -251,6 +250,7 @@ http.interceptors.response.use(
 
         // 再同步到 store（包含后续 loginAfter 的流程）
         console.log('准备设置 token 到 userStore:', token);
+        const userStore = $store('user');
         console.log('设置前 userStore.isLogin:', userStore.isLogin);
         try {
           const result = userStore.setToken(token);
@@ -271,12 +271,13 @@ http.interceptors.response.use(
       console.log('===== 处理 no-auth/wechat/getSessionId 响应 =====');
       console.log('响应 data:', response.data);
       console.log('准备设置 token:', response.data?.data?.token);
+      const userStore = $store('user');
       userStore.setToken(response.data?.data?.token);
     }
     response.config.custom.showLoading && closeLoading();
     const { data } = response
     if (data && data.code && data.code !== 200){
-      let errorMsg = data.msg
+      let errorMsg = data.msg || '服务器内部错误'
       if (data.code === 401){
         //无权限
         const userStore = $store('user')
@@ -345,73 +346,76 @@ http.interceptors.response.use(
     // }
   },
   (error) => {
-    // const userStore = $store('user');
-    // const isLogin = userStore.isLogin;
-    // let errorMessage = '网络请求出错';
-    // if (error !== undefined) {
-    //   switch (error.statusCode) {
-    //     case 400:
-    //       errorMessage = '请求错误';
-    //       break;
-    //     case 401:
-    //       if (isLogin) {
-    //         errorMessage = '您的登陆已过期';
-    //       } else {
-    //         errorMessage = '请先登录';
-    //       }
-    //       userStore.logout(true);
-    //       showAuthModal();
-    //       break;
-    //     case 403:
-    //       errorMessage = '拒绝访问';
-    //       break;
-    //     case 404:
-    //       errorMessage = '请求出错';
-    //       break;
-    //     case 408:
-    //       errorMessage = '请求超时';
-    //       break;
-    //     case 429:
-    //       errorMessage = '请求频繁, 请稍后再访问';
-    //       break;
-    //     case 500:
-    //       errorMessage = '服务器开小差啦,请稍后再试~';
-    //       break;
-    //     case 501:
-    //       errorMessage = '服务未实现';
-    //       break;
-    //     case 502:
-    //       errorMessage = '网络错误';
-    //       break;
-    //     case 503:
-    //       errorMessage = '服务不可用';
-    //       break;
-    //     case 504:
-    //       errorMessage = '网络超时';
-    //       break;
-    //     case 505:
-    //       errorMessage = 'HTTP版本不受支持';
-    //       break;
-    //   }
-    //   if (error.errMsg.includes('timeout')) errorMessage = '请求超时';
-    //   // #ifdef H5
-    //   if (error.errMsg.includes('Network'))
-    //     errorMessage = window.navigator.onLine ? '服务器异常' : '请检查您的网络连接';
-    //   // #endif
-    // }
-    //
-    // if (error && error.config) {
-    //   if (error.config.custom.showError === false) {
-    //     uni.showToast({
-    //       title: error.data?.msg || errorMessage,
-    //       icon: 'none',
-    //       mask: true,
-    //     });
-    //   }
-    //   error.config.custom.showLoading && closeLoading();
-    // }
-    //
-    return false;
+    const userStore = $store('user');
+    const isLogin = userStore.isLogin;
+    let errorMessage = '网络请求出错';
+    if (error !== undefined) {
+      switch (error.statusCode) {
+        case 400:
+          errorMessage = '请求错误';
+          break;
+        case 401:
+          if (isLogin) {
+            errorMessage = '您的登录已过期';
+          } else {
+            errorMessage = '请先登录';
+          }
+          userStore.logout(true);
+          showAuthModal();
+          break;
+        case 403:
+          errorMessage = '拒绝访问';
+          break;
+        case 404:
+          errorMessage = '请求出错';
+          break;
+        case 408:
+          errorMessage = '请求超时';
+          break;
+        case 429:
+          errorMessage = '请求频繁, 请稍后再访问';
+          break;
+        case 500:
+          errorMessage = '服务器开小差啦,请稍后再试~';
+          break;
+        case 501:
+          errorMessage = '服务未实现';
+          break;
+        case 502:
+          errorMessage = '网络错误';
+          break;
+        case 503:
+          errorMessage = '服务不可用';
+          break;
+        case 504:
+          errorMessage = '网络超时';
+          break;
+        case 505:
+          errorMessage = 'HTTP版本不受支持';
+          break;
+        default:
+          errorMessage = '服务器开小差啦,请稍后再试~';
+          break;
+      }
+      if (error.errMsg.includes('timeout')) errorMessage = '请求超时';
+      // #ifdef H5
+      if (error.errMsg.includes('Network'))
+        errorMessage = window.navigator.onLine ? '服务器异常' : '请检查您的网络连接';
+      // #endif
+    }
+
+    if (error && error.config) {
+      if (error.config.custom.showError === false) {
+        uni.showToast({
+          title: error.data?.msg || errorMessage,
+          icon: 'none',
+          mask: true,
+        });
+      }
+      error.config.custom.showLoading && closeLoading();
+    }
+
+    return Promise.reject(errorMessage);
   },
 );
 

@@ -19,7 +19,7 @@ export default {
     }),
   update: (data) =>
     request({
-      url: '/user/api/user/update',
+      url: '/h5/member/update',
       method: 'POST',
       custom: {
         showSuccess: true,

@@ -117,14 +117,14 @@
   // 开始播放
   const startPlay = () => {
     nextTick(() => {
-      const video = uni.createVideoContext(`sVideo${props.index}`, vm);
+      const video = uni.createVideoContext(`sVideo${props.uid}`, vm);
       video.play();
     });
   };
 
   //暂停播放
   const pausePlay = () => {
-    const video = uni.createVideoContext(`sVideo${props.index}`, vm);
+    const video = uni.createVideoContext(`sVideo${props.uid}`, vm);
     video.pause();
   };
 

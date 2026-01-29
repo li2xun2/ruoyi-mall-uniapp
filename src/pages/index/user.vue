@@ -7,6 +7,7 @@
     :navbarStyle="template.style?.navbar"
     onShareAppMessage
     :showFloatButton="true"
+    :showLeftButton="true"
   >
     <s-block v-for="(item, index) in template.data" :key="index" :styles="item.style">
       <s-block-item :type="item.type" :data="item.data" :styles="item.style" />

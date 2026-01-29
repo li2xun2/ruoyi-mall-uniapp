@@ -181,6 +181,7 @@ function error(errCode, errMsg = '') {
 
 export default {
   go,
+  push: go, // 添加push方法作为go的别名
   back,
   hasHistory,
   redirect,

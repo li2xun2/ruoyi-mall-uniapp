@@ -27,7 +27,7 @@
         <input 
           v-model="loginForm.username" 
           class="form-input" 
-          placeholder="请输入用户名"
+          placeholder="请输入用户名" 
           type="text"
         />
       </view>
@@ -58,7 +58,7 @@
         <input 
           v-model="registerForm.username" 
           class="form-input" 
-          placeholder="请输入用户名"
+          placeholder="请输入用户名" 
           type="text"
         />
       </view>
@@ -123,7 +123,7 @@ const handleLogin = async () => {
     isLoading.value = true;
     try {
       const res = await userApi.accountLogin({
-        mobile: loginForm.username,
+        username: loginForm.username,
         password: loginForm.password
       });
       
@@ -133,11 +133,7 @@ const handleLogin = async () => {
           icon: 'success'
         });
         // 兜底：若拦截器未及时写入 token，这里手动写入，避免后续 getInfo 被拦截
-        const token =
-          res?.token ||
-          res?.data?.token ||
-          res?.data?.data?.token ||
-          (typeof res?.data === 'string' ? res.data : null);
+        const token = res?.token || res?.data?.token || res?.data?.data?.token || (typeof res?.data === 'string' ? res.data : null);
         if (token) {
           sheep.$store('user').setToken(token);
         }
@@ -151,8 +147,9 @@ const handleLogin = async () => {
         });
       }
     } catch (error) {
+      const errorMsg = error || '登录失败';
       uni.showToast({
-        title: '登录异常，请稍后重试',
+        title: errorMsg,
         icon: 'none'
       });
       console.error('登录错误:', error);
@@ -174,7 +171,7 @@ const handleRegister = async () => {
     try {
       // 调用账号注册接口
       const res = await userApi.accountRegister({
-        mobile: registerForm.username,
+        username: registerForm.username,
         password: registerForm.password
       });
       
@@ -195,8 +192,9 @@ const handleRegister = async () => {
         });
       }
     } catch (error) {
+      const errorMsg = error || '注册失败';
       uni.showToast({
-        title: '注册异常，请稍后重试',
+        title: errorMsg,
         icon: 'none'
       });
       console.error('注册错误:', error);
