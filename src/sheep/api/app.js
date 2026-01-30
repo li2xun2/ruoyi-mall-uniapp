@@ -99,7 +99,7 @@ export default {
                 filePath: file,
                 name: 'file',
                 header: {
-                    Authorization: token,
+                    Authorization: 'Bearer ' + token,
                 },
                 success: (uploadFileRes) => {
                     try {
