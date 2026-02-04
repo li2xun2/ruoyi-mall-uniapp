@@ -927,6 +927,25 @@ const app = defineStore({
                                         "bgColor": "#FF6000"
                                     },
                                     finish: true
+                                },
+                                {
+                                    "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/customer_service.png",
+                                    "title": {
+                                        "text": "AI客服",
+                                        "color": "#333"
+                                    },
+                                    "tip": {
+                                        "text": "",
+                                        "color": "#bbb"
+                                    },
+                                    "url": "\/pages\/user\/ai-service",
+                                    "badge": {
+                                        "show": 0,
+                                        "text": "",
+                                        "color": "#FFFFFF",
+                                        "bgColor": "#FF6000"
+                                    },
+                                    finish: true
                                 }
                             ]
                         },

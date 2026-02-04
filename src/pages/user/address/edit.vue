@@ -31,22 +31,42 @@
           </uni-easyinput>
         </uni-forms-item>
         <uni-forms-item
-            name="region"
-            label="省市区"
-            @tap="state.showRegion = true"
+            name="province"
+            label="省份"
             class="form-item"
         >
           <uni-easyinput
-              v-model="state.model.region"
-              disabled
+              v-model="state.model.province"
               :inputBorder="false"
-              :styles="{ disableColor: '#fff', color: '#333' }"
               placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
-              placeholder="请选择省市区"
+              placeholder="请输入省份"
           >
-            <template v-slot:right>
-              <uni-icons type="right"></uni-icons>
-            </template>
+          </uni-easyinput>
+        </uni-forms-item>
+        <uni-forms-item
+            name="city"
+            label="城市"
+            class="form-item"
+        >
+          <uni-easyinput
+              v-model="state.model.city"
+              :inputBorder="false"
+              placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
+              placeholder="请输入城市"
+          >
+          </uni-easyinput>
+        </uni-forms-item>
+        <uni-forms-item
+            name="district"
+            label="区县"
+            class="form-item"
+        >
+          <uni-easyinput
+              v-model="state.model.district"
+              :inputBorder="false"
+              placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
+              placeholder="请输入区县"
+          >
           </uni-easyinput>
         </uni-forms-item>
         <uni-forms-item
@@ -82,14 +102,7 @@
         </button>
       </view>
     </su-fixed>
-    <!-- 省市区弹窗 -->
-    <su-region-picker
-        :show="state.showRegion"
-        @cancel="state.showRegion = false"
-        @confirm="onRegionConfirm"
-        :valArr = "state.model.fullArea"
-    >
-    </su-region-picker>
+    
   </s-layout>
 </template>
 
@@ -98,62 +111,28 @@ import { computed, watch, ref, reactive, unref } from 'vue';
 import sheep from '@/sheep';
 import { onLoad, onPageScroll } from '@dcloudio/uni-app';
 import _ from 'lodash';
-import { name, phone, detailAddress, region } from '@/sheep/validate/form';
+import { name, phone, detailAddress } from '@/sheep/validate/form';
 
 const addressFormRef = ref(null);
 const state = reactive({
-  showRegion: false,
   model: {
     name: '',
     phone: '',
     detailAddress: '',
     is_default: false,
-    region: '',
-    fullArea: []
+    province: '',
+    city: '',
+    district: '',
   },
   rules: {
     name,
     phone,
     detailAddress,
-    region,
   },
 });
 const currentRole = computed(() => sheep.$store("user").currentRole);
 
-watch(
-    () => state.model.province,
-    (newValue) => {
-      if (newValue) {
-        state.model.fullArea = [state.model.provinceId,state.model.cityId,state.model.districtId]
-        state.model.region = `${state.model.province}-${state.model.city}-${state.model.district}`;
-      }
-    },
-    {
-      deep: true,
-    },
-);
-const onRegionConfirm = (e) => {
-  const {city_id,city_name,district_id,district_name,province_id,province_name} = e
-  state.model = {
-    ...state.model,
-    province: province_name,
-    city: city_name,
-    district: district_name,
-    provinceId: province_id,
-    cityId: city_id,
-    districtId: district_id
-  };
-  state.showRegion = false;
-};
-const getAreaData = () => {
-  if (_.isEmpty(uni.getStorageSync('areaData'))) {
-    sheep.$api.data.area().then((res) => {
-      if (res.error === 0) {
-        uni.setStorageSync('areaData', res.data);
-      }
-    });
-  }
-};
+
 const onSave = async () => {
   const validate = await unref(addressFormRef)
       .validate()
@@ -165,13 +144,21 @@ const onSave = async () => {
   let res = null;
   const params = {...state.model}
   params.isDefault = params.isDefault ? 1: 0
+  
   if (state.model.id) {
     res = await sheep.$api.user.address.update(params);
   } else {
     res = await sheep.$api.user.address.create(params);
   }
   if (res > 0) {
-    sheep.$router.back();
+    // 获取当前页面栈
+    const pages = getCurrentPages();
+    // 如果页面栈长度大于1，则返回上一页，否则跳转到地址列表页面
+    if (pages.length > 1) {
+      sheep.$router.back();
+    } else {
+      sheep.$router.go('/pages/user/address/list');
+    }
   }
 };
 
@@ -182,13 +169,19 @@ const onDelete = () => {
     success: async function (res) {
       if (res.confirm) {
         await sheep.$api.user.address.delete(state.model.id);
-        sheep.$router.back();
+        // 获取当前页面栈
+        const pages = getCurrentPages();
+        // 如果页面栈长度大于1，则返回上一页，否则跳转到地址列表页面
+        if (pages.length > 1) {
+          sheep.$router.back();
+        } else {
+          sheep.$router.go('/pages/user/address/list');
+        }
       }
     },
   });
 };
 onLoad(async (options) => {
-  getAreaData();
   if (options.id) {
     let res;
     res = await sheep.$api.user.address.detail(options.id);

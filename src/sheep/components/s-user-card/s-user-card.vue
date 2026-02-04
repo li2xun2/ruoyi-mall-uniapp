@@ -7,8 +7,8 @@
           <image
             class="avatar-img"
             :src="
-              isLogin && userInfo.avatar
-                ? sheep.$url.cdn(userInfo.avatar)
+              isLogin && userInfo?.data?.avatar
+                ? sheep.$url.cdn(userInfo.data.avatar)
                 : sheep.$url.static('https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/default_avatar.png')
             "
             mode="aspectFill"
@@ -17,7 +17,7 @@
         </view>
         <view>
           <view class="nickname-box ss-flex ss-col-center">
-            <view class="nick-name ss-m-r-20" @tap="isLogin && goToEditInfo()">{{ userInfo?.nickname || nickname }}</view>
+            <view class="nick-name ss-m-r-20" @tap="isLogin && goToEditInfo()">{{ userInfo?.data?.nickname || nickname }}</view>
             <button v-if="isLogin" class="ss-reset-button edit-btn" @tap="goToEditInfo()">
               <text class="sicon-edit"></text>
             </button>
@@ -59,15 +59,18 @@
    *
    *
    */
-  import { computed, reactive } from 'vue';
-  import sheep from '@/sheep';
-  import { showShareModal, showAuthModal } from '@/sheep/hooks/useModal';
+  import { computed, reactive, onMounted } from 'vue';
+import sheep from '@/sheep';
+import { showShareModal, showAuthModal } from '@/sheep/hooks/useModal';
+
+  // 获取用户store
+  const userStore = sheep.$store('user');
 
   // 用户信息
-  const userInfo = computed(() => sheep.$store('user').userInfo);
+  const userInfo = computed(() => userStore.userInfo);
 
   // 是否登录
-  const isLogin = computed(() => sheep.$store('user').isLogin);
+  const isLogin = computed(() => userStore.isLogin);
   // 接收参数
   const props = defineProps({
     background: {
@@ -115,6 +118,15 @@
     // 跳转到个人信息编辑页面
     sheep.$router.go('/pages/member/info-set');
   }
+  
+  // 组件加载时更新用户信息
+  onMounted(async () => {
+    try {
+      await userStore.updateUserData();
+    } catch (error) {
+      console.error('更新用户信息失败:', error);
+    }
+  });
 </script>
 
 <style lang="scss" scoped>

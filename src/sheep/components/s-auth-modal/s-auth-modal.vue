@@ -201,10 +201,10 @@ import {computed, onMounted, reactive, ref, watch} from 'vue';
 
   .contact-content {
     text-align: center;
-    image  {
+    .contact-image {
       max-width: 640rpx !important; /* 设置最大宽度为容器的百分之百 */
     }
-    rich-text {
+    .contact-rich-text {
       text-align: center;
     }
   }

@@ -173,11 +173,14 @@ const chooseAvatar = () => {
     success: async (res) => {
       const tempFilePaths = res.tempFilePaths;
       console.log('选择的图片路径:', tempFilePaths);
+      // 先使用本地临时路径显示图片，避免微信小程序的HTTP协议限制
+      form.value.avatar = tempFilePaths[0];
       // 上传头像
       try {
         const uploadResult = await sheep.$api.app.upload(tempFilePaths[0]);
         console.log('上传结果:', uploadResult);
         if (uploadResult && uploadResult.url) {
+          // 上传成功后，更新为网络路径
           form.value.avatar = uploadResult.url;
           console.log('设置后的form.value.avatar:', form.value.avatar);
           sheep.$helper.toast('头像上传成功');

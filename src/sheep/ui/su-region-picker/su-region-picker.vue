@@ -58,7 +58,8 @@
    * @event {Function} confirm 点击确定按钮，返回当前选择的值
    * @event {Function} cancel 点击取消按钮，返回当前选择的值
    */
-  import { computed, reactive } from 'vue';
+  import { computed, reactive, watch } from 'vue';
+  import sheep from '@/sheep';
   const props = defineProps({
     show: {
       type: Boolean,
@@ -85,7 +86,41 @@
       default: '确认',
     },
   });
-  const areaData = uni.getStorageSync('areaData');
+  const state = reactive({
+    areaData: uni.getStorageSync('areaData') || [],
+    currentIndex: [0, 0, 0],
+    moving: false, // 列是否还在滑动中，微信小程序如果在滑动中就点确定，结果可能不准确
+    loading: false,
+  });
+  const emits = defineEmits(['confirm', 'cancel', 'change']);
+
+  // 监听 show 属性，当组件显示时检查并加载数据
+  watch(() => props.show, async (newVal) => {
+    if (newVal && state.areaData.length === 0) {
+      await loadAreaData();
+    }
+  });
+
+  // 加载省市区数据
+  const loadAreaData = async () => {
+    if (state.loading) return;
+    state.loading = true;
+    try {
+      const response = await sheep.$api.data.area();
+      console.log('省市区数据响应:', response);
+      if (response && response.code === 200 && response.data) {
+        state.areaData = response.data;
+        uni.setStorageSync('areaData', response.data);
+        console.log('省市区数据已加载并缓存到本地');
+      } else {
+        console.log('获取省市区数据失败:', response);
+      }
+    } catch (error) {
+      console.error('获取省市区数据异常:', error);
+    } finally {
+      state.loading = false;
+    }
+  };
 
   const getSizeByNameLength = (name) => {
     let length = name.length;
@@ -96,19 +131,22 @@
       return 'font-size: 24rpx';
     }
   };
-  const state = reactive({
-    currentIndex: [0, 0, 0],
-    moving: false, // 列是否还在滑动中，微信小程序如果在滑动中就点确定，结果可能不准确
-  });
-  const emits = defineEmits(['confirm', 'cancel', 'change']);
 
-  const provinceList = areaData;
+  const provinceList = computed(() => {
+    return state.areaData || [];
+  });
 
   const cityList = computed(() => {
-    return areaData[state.currentIndex[0]].children;
+    const provinces = provinceList.value;
+    if (provinces.length === 0) return [];
+    const provinceIndex = Math.min(state.currentIndex[0], provinces.length - 1);
+    return provinces[provinceIndex]?.children || [];
   });
   const districtList = computed(() => {
-    return cityList.value[state.currentIndex[1]]?.children;
+    const cities = cityList.value;
+    if (cities.length === 0) return [];
+    const cityIndex = Math.min(state.currentIndex[1], cities.length - 1);
+    return cities[cityIndex]?.children || [];
   });
   // 标识滑动开始，只有微信小程序才有这样的事件
   const pickstart = () => {
@@ -155,16 +193,23 @@
     if (state.moving) return;
     // #endif
     let index = state.currentIndex;
-    let province = provinceList[index[0]];
+    let province = provinceList.value[index[0]];
     let city = cityList.value[index[1]];
     let district = districtList.value[index[2]];
+    
+    // 检查是否有选中的值
+    if (!province) {
+      console.log('未选择省份');
+      return;
+    }
+    
     let result = {
       province_name: province.name,
       province_id: province.id,
-      city_name: city.name,
-      city_id: city.id,
-      district_name: district.name,
-      district_id: district.id,
+      city_name: city?.name || '',
+      city_id: city?.id || '',
+      district_name: district?.name || '',
+      district_id: district?.id || '',
     };
 
     if (event) emits(event, result);

@@ -427,6 +427,18 @@
             "title": "用户积分",
             "group": "用户中心"
           }
+        },
+        {
+          "path": "ai-service",
+          "style": {
+            "navigationBarTitleText": "AI客服"
+          },
+          "meta": {
+            "auth": true,
+            "sync": true,
+            "title": "AI客服",
+            "group": "用户中心"
+          }
         }
       ]
     },

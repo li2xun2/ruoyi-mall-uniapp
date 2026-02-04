@@ -48,19 +48,21 @@
     sheep.$router.back();
   };
 
-  onShow(async () => {
+  const loadAddressList = async () => {
     const res = await sheep.$api.user.address.list();
     state.list = res
     console.log('res:', res)
     state.loading = false;
+  };
+
+  onShow(async () => {
+    await loadAddressList();
   });
 
-  onBeforeMount(() => {
-    // 提前加载省市区数据
-    sheep.$api.data.area().then((res) => {
-      uni.setStorageSync('areaData', res.data);
-    });
-  });
+  // 监听地址删除事件，刷新列表
+  uni.$on('ADDRESS_DELETED', loadAddressList);
+
+
 </script>
 
 <style lang="scss" scoped>

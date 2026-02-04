@@ -19,11 +19,18 @@
     </view>
     <view v-else><view class="address-text ss-m-b-10">请选择收货地址</view></view>
     <slot>
-      <button class="ss-reset-button edit-btn" @tap.stop="onEdit">
-        <view class="edit-icon ss-flex ss-row-center ss-col-center">
-          <image :src="sheep.$url.static('/static/img/shop/user/address/edit.png')"></image>
-        </view>
-      </button>
+      <view class="action-buttons ss-flex ss-col-center">
+        <button class="ss-reset-button edit-btn" @tap.stop="onEdit">
+          <view class="edit-icon ss-flex ss-row-center ss-col-center">
+            <uni-icons type="compose" size="24" color="#666666"></uni-icons>
+          </view>
+        </button>
+        <button class="ss-reset-button delete-btn" @tap.stop="onDelete">
+          <view class="delete-icon ss-flex ss-row-center ss-col-center">
+            <uni-icons type="trash" size="24" color="#666666"></uni-icons>
+          </view>
+        </button>
+      </view>
     </slot>
   </view>
 </template>
@@ -57,6 +64,20 @@
       id: props.item.id,
     });
   };
+
+  const onDelete = () => {
+    uni.showModal({
+      title: '提示',
+      content: '确认删除此收货地址吗？',
+      success: async function (res) {
+        if (res.confirm) {
+          await sheep.$api.user.address.delete(props.item.id);
+          // 触发父组件更新地址列表
+          uni.$emit('ADDRESS_DELETED');
+        }
+      },
+    });
+  };
 </script>
 
 <style lang="scss" scoped>
@@ -87,13 +108,19 @@
     }
   }
 
-  .edit-btn {
+  .action-buttons {
+    gap: 16rpx;
+  }
+
+  .edit-btn,
+  .delete-btn {
     width: 44rpx;
     height: 44rpx;
     background: $gray-f;
     border-radius: 50%;
 
-    .edit-icon {
+    .edit-icon,
+    .delete-icon {
       width: 24rpx;
       height: 24rpx;
     }

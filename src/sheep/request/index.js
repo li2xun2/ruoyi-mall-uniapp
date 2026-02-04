@@ -86,7 +86,7 @@ function closeLoading() {
  */
 const http = new Request({
   baseURL: baseUrl,
-  timeout: 8000,
+  timeout: 60000,
   method: 'GET',
   header: {
     Accept: 'application/json',
@@ -130,8 +130,8 @@ http.interceptors.request.use(
     // 特殊处理：如果请求的是获取会员信息，并且本地存储中有 token，就允许这个请求通过
     if (config.custom.auth && config.url.includes('h5/member/info') && token) {
       console.log('请求 /h5/member/info 需要认证，本地存储中有 token，允许请求通过');
-      config.header['Authorization'] = token;
-      console.log('设置请求头 Authorization:', token);
+      config.header['Authorization'] = 'Bearer ' + token;
+      console.log('设置请求头 Authorization:', 'Bearer ' + token);
       return config;
     }
     
@@ -154,8 +154,8 @@ http.interceptors.request.use(
           const newToken = uni.getStorageSync('token');
           console.log('登录成功后，从本地存储读取到的新 token:', newToken);
           if (newToken) {
-            config.header['Authorization'] = newToken;
-            console.log('设置请求头 Authorization:', newToken);
+            config.header['Authorization'] = 'Bearer ' + newToken;
+            console.log('设置请求头 Authorization:', 'Bearer ' + newToken);
           }
           return config;
         })
@@ -177,7 +177,7 @@ http.interceptors.request.use(
           },
         });
     }
-    if (token) config.header['Authorization'] = token;
+    if (token) config.header['Authorization'] = 'Bearer ' + token;
     console.log('请求头:', config.header);
     return config;
   },
@@ -422,6 +422,12 @@ http.interceptors.response.use(
 const request = (config) => {
   if (config.url[0] !== '/') {
     config.url = apiPath + config.url;
+  }
+  // 确保timeout参数被正确传递
+  if (config.timeout) {
+    http.config.timeout = config.timeout;
+  } else {
+    http.config.timeout = 100000;
   }
   return http.middleware(config);
 };

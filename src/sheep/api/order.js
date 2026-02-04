@@ -152,9 +152,24 @@ export default {
       url: 'order/express/' + id + `${orderId ? '/' + orderId : ''}`,
       method: 'GET',
     }),
+// 订单数量统计
   count: () =>
     request({
       url: '/h5/order/countOrder',
       method: 'GET'
+    }),
+  // 订单支付
+  orderPay: (data) =>
+    request({
+      url: '/h5/order/orderPay',
+      method: 'POST',
+      data
+    }),
+  // 模拟支付成功（毕设用）
+  mockPay: (data) =>
+    request({
+      url: '/h5/order/mockPay',
+      method: 'POST',
+      data
     })
 };

@@ -108,7 +108,8 @@ export default {
                         if (result.code === 200) {
                             // 适配后端返回格式
                             const filePath = result.data || result.fileName;
-                            const fileUrl = baseUrl + filePath;
+                            // 确保生成的URL不会包含"//"
+                            const fileUrl = baseUrl.replace(/\/$/, '') + '/' + filePath.replace(/^\//, '');
                             console.log('上传成功，filePath：', filePath, 'fileUrl：', fileUrl);
                             return resolve({ path: filePath, url: fileUrl });
                         } else {

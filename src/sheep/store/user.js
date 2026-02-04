@@ -63,12 +63,12 @@ const user = defineStore({
     // 获取个人信息
     async getInfo() {
       const data  = await userApi.profile();
-      if (!data) return;
-      this.userInfo = data;
+      if (!data || !data.data) return;
+      this.userInfo = data.data;
       // 获取到用户信息后，设置isLogin为true
       this.isLogin = true;
 
-      return Promise.resolve(data);
+      return Promise.resolve(data.data);
     },
 
     // 获取分销商信息
