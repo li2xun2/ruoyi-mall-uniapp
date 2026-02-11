@@ -20,25 +20,57 @@ export default {
     }),
   signList: (params) =>
     request({
-      url: 'h5/act/integral/list',
+      url: 'h5/act/sign/list',
       method: 'GET',
       params,
+      auth: true
     }),
-  signAdd: (params) =>
+  signAdd: (data) =>
     request({
-      url: 'h5/act/integral/add',
+      url: 'h5/act/sign/add',
       method: 'POST',
-      params
+      data,
+      auth: true
     }),
   replenish: (data) =>
     request({
-      url: 'activity/signin/replenish',
+      url: 'h5/act/sign/replenish',
       method: 'POST',
       data,
+      auth: true
     }),
   activity: (id) =>
     request({
       url: 'activity/activity/' + id,
       method: 'GET',
+    }),
+  // 积分相关API
+  integralList: (params) =>
+    request({
+      url: 'h5/act/integral/list',
+      method: 'GET',
+      params,
+      auth: true
+    }),
+  integralAdd: (data) =>
+    request({
+      url: 'h5/act/integral/add',
+      method: 'POST',
+      data,
+      auth: true
+    }),
+  integralHistoryList: (data) =>
+    request({
+      url: 'h5/act/integral/history/list',
+      method: 'POST',
+      data,
+      auth: true
+    }),
+  integralStat: (data) =>
+    request({
+      url: 'h5/act/integral/stat',
+      method: 'POST',
+      data,
+      auth: true
     }),
 };
