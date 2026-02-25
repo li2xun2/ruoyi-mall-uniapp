@@ -19,6 +19,8 @@ const ai = {
     }
   }),
   
+
+  
   // 获取系统状态
   status: () => request({
     url: '/api/ai/status',

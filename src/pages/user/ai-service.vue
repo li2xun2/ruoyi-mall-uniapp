@@ -123,7 +123,7 @@
   }
   
   // 发送消息
-  async function sendMessage() {
+  function sendMessage() {
     const text = inputText.value.trim();
     if (!text) return;
     
@@ -137,40 +137,45 @@
     inputText.value = '';
     loading.value = true;
     
+    // 添加AI消息占位符
+    const aiMessageIndex = messages.value.length;
+    messages.value.push({
+      type: 'ai',
+      content: '',
+      confidence: 0,
+      timestamp: new Date().getTime(),
+      streaming: true
+    });
+    
     // 滚动到底部
     setTimeout(() => {
       scrollToBottom();
     }, 100);
     
-    try {
-      // 调用AI服务API
-      const response = await sheep.$api.ai.chat({
-        question: text
-      });
-      
-      // 添加AI回复
-      messages.value.push({
-        type: 'ai',
-        content: response.answer || '抱歉，我无法回答这个问题',
-        confidence: response.confidence || 0,
-        timestamp: new Date().getTime()
-      });
-    } catch (error) {
-      console.error('AI服务请求失败:', error);
-      // 添加错误消息
-      messages.value.push({
-        type: 'ai',
-        content: '抱歉，系统暂时无法处理您的问题，请稍后再试。',
-        confidence: 0,
-        timestamp: new Date().getTime()
-      });
-    } finally {
+    // 调用AI服务API
+    sheep.$api.ai.chat({
+      question: text
+    }).then(res => {
+      // 更新AI消息
+      messages.value[aiMessageIndex].content = res.answer || '抱歉，系统暂时无法处理您的问题，请稍后再试。';
+      messages.value[aiMessageIndex].confidence = res.confidence || 0;
+      messages.value[aiMessageIndex].streaming = false;
       loading.value = false;
       // 滚动到底部
       setTimeout(() => {
         scrollToBottom();
       }, 100);
-    }
+    }).catch(error => {
+      console.error('AI服务请求失败:', error);
+      // 更新错误消息
+      messages.value[aiMessageIndex].content = '抱歉，系统暂时无法处理您的问题，请稍后再试。';
+      messages.value[aiMessageIndex].streaming = false;
+      loading.value = false;
+      // 滚动到底部
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    });
   }
   
   // 滚动到底部

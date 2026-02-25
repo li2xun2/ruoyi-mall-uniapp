@@ -73,4 +73,31 @@ export default {
       data,
       auth: true
     }),
+  // 积分商城相关API
+  integralGoodsList: () =>
+    request({
+      url: 'h5/integral/goods/list',
+      method: 'GET',
+      auth: true
+    }),
+  integralGoodsDetail: (id) =>
+    request({
+      url: 'h5/integral/goods/detail',
+      method: 'GET',
+      params: { id },
+      auth: true
+    }),
+  integralExchange: (data) =>
+    request({
+      url: 'h5/integral/exchange',
+      method: 'POST',
+      data,
+      auth: true
+    }),
+  integralExchangeList: () =>
+    request({
+      url: 'h5/integral/exchange/list',
+      method: 'GET',
+      auth: true
+    })
 };

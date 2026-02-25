@@ -824,14 +824,14 @@ const app = defineStore({
                                         "text": "",
                                         "color": "#bbb"
                                     },
-                                    "url": "\/pages\/app\/score-shop",
+                                    "url": "\/pages\/user\/integral\/mall",
                                     "badge": {
                                         "show": 0,
                                         "text": "",
                                         "color": "#FFFFFF",
                                         "bgColor": "#FF6000"
                                     },
-                                    finish: false
+                                    finish: true
                                 },
                                 {
                                     "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/userStar.png",
