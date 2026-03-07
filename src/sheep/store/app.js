@@ -805,7 +805,7 @@ const app = defineStore({
                                         "text": "",
                                         "color": "#bbb"
                                     },
-                                    "url": "\/pages\/public\/richtext?key=mall.question&title=常见问题",
+                                    "url": "\/pages\/public\/faq",
                                     "badge": {
                                         "show": 0,
                                         "text": "",
@@ -833,63 +833,7 @@ const app = defineStore({
                                     },
                                     finish: true
                                 },
-                                {
-                                    "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/userStar.png",
-                                    "title": {
-                                        "text": "关于我们",
-                                        "color": "#333"
-                                    },
-                                    "tip": {
-                                        "text": "",
-                                        "color": "#bbb"
-                                    },
-                                    "url": "\/pages\/public\/richtext?key=mall.aboutUs&title=关于我们",
-                                    "badge": {
-                                        "show": 0,
-                                        "text": "",
-                                        "color": "#FFFFFF",
-                                        "bgColor": "#FF6000"
-                                    },
-                                    finish: true
-                                },
-                                {
-                                    "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/privacy.png",
-                                    "title": {
-                                        "text": "隐私协议",
-                                        "color": "#333"
-                                    },
-                                    "tip": {
-                                        "text": "",
-                                        "color": "#bbb"
-                                    },
-                                    "url": "\/pages\/public\/richtext?key=mall.privacyAgreement&title=隐私协议",
-                                    "badge": {
-                                        "show": 0,
-                                        "text": "",
-                                        "color": "#FFFFFF",
-                                        "bgColor": "#FF6000"
-                                    },
-                                    finish: true
-                                },
-                                {
-                                    "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/team.png",
-                                    "title": {
-                                        "text": "我的团队",
-                                        "color": "#333"
-                                    },
-                                    "tip": {
-                                        "text": "",
-                                        "color": "#bbb"
-                                    },
-                                    "url": "\/pages\/user\/address\/list",
-                                    "badge": {
-                                        "show": 0,
-                                        "text": "",
-                                        "color": "#FFFFFF",
-                                        "bgColor": "#FF6000"
-                                    },
-                                    finish: false
-                                },
+
                                 {
                                     "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/location.png",
                                     "title": {

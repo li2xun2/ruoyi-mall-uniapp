@@ -439,6 +439,38 @@
             "title": "AI客服",
             "group": "用户中心"
           }
+        },
+        {
+          "path": "integral/mall",
+          "style": {
+            "navigationBarTitleText": "积分商城"
+          },
+          "meta": {
+            "auth": true,
+            "sync": true,
+            "title": "积分商城",
+            "group": "用户中心"
+          }
+        },
+        {
+          "path": "integral/goods-detail",
+          "style": {
+            "navigationBarTitleText": "商品详情"
+          },
+          "meta": {
+            "auth": true,
+            "title": "积分商品详情"
+          }
+        },
+        {
+          "path": "integral/exchange-record",
+          "style": {
+            "navigationBarTitleText": "兑换记录"
+          },
+          "meta": {
+            "auth": true,
+            "title": "积分兑换记录"
+          }
         }
       ]
     },

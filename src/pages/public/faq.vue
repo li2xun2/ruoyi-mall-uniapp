@@ -13,12 +13,12 @@
               <view class="triangle"> </view>
             </view>
             <view class="title ss-m-t-36 ss-m-b-36">
-              {{ item.title }}
+              {{ item.question }}
             </view>
           </view>
         </template>
         <view class="content ss-p-l-78 ss-p-r-40 ss-p-b-50 ss-p-t-20">
-          <text class="text">{{ item.content }}</text>
+          <text class="text">{{ item.answer }}</text>
         </view>
       </uni-collapse-item>
     </uni-collapse>
@@ -41,9 +41,23 @@
   });
 
   async function getFaqList() {
-    const { error, data } = await sheep.$api.data.faq();
-    if (error === 0) {
-      state.list = data;
+    console.log('开始获取FAQ列表');
+    try {
+      const result = await sheep.$api.data.faq();
+      console.log('API调用结果:', result);
+      // 后端直接返回Page对象，不是{error, data}格式
+      if (result && result.content) {
+        console.log('API调用成功，返回数据:', result);
+        console.log('FAQ列表数据:', result.content);
+        state.list = result.content;
+        state.loading = false;
+        console.log('最终FAQ列表:', state.list);
+      } else {
+        console.log('API调用失败: 返回数据格式不正确');
+        state.loading = false;
+      }
+    } catch (error) {
+      console.log('API调用异常:', error);
       state.loading = false;
     }
   }

@@ -12,10 +12,12 @@ export default {
       url: '/h5/area',
       method: 'GET',
     }),
-  faq: () =>
+  faq: (data = {}, params = { page: 0, size: 10 }) =>
     request({
-      url: 'data/faq',
-      method: 'GET',
+      url: '/api/ai/faqs/list',
+      method: 'POST',
+      data,
+      params
     }),
   richtext: (id) =>
     request({
