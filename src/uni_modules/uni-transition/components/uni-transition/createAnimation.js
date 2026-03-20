@@ -43,8 +43,9 @@ class MPAnimation {
 		this.currentStepAnimates[this.next] = styles
 	}
 	_animateRun(styles = {}, config = {}) {
-		let ref = this.$.$refs['ani'].ref
-		if (!ref) return
+		if (!this.$) return Promise.resolve()
+		let ref = this.$.$refs['ani'] && this.$.$refs['ani'].ref
+		if (!ref) return Promise.resolve()
 		return new Promise((resolve, reject) => {
 			nvueAnimation.transition(ref, {
 				styles,
@@ -56,6 +57,10 @@ class MPAnimation {
 	}
 
 	_nvueNextAnimate(animates, step = 0, fn) {
+		if (!this.$) {
+			typeof fn === 'function' && fn()
+			return
+		}
 		let obj = animates[step]
 		if (obj) {
 			let {
@@ -75,27 +80,42 @@ class MPAnimation {
 
 	step(config = {}) {
 		// #ifndef APP-NVUE
-		this.animation.step(config)
+		if (this.$) {
+			this.animation.step(config)
+		}
 		// #endif
 		// #ifdef APP-NVUE
-		this.currentStepAnimates[this.next].config = Object.assign({}, this.options, config)
-		this.currentStepAnimates[this.next].styles.transformOrigin = this.currentStepAnimates[this.next].config.transformOrigin
-		this.next++
+		if (this.$ && this.currentStepAnimates[this.next]) {
+			this.currentStepAnimates[this.next].config = Object.assign({}, this.options, config)
+			this.currentStepAnimates[this.next].styles.transformOrigin = this.currentStepAnimates[this.next].config.transformOrigin
+			this.next++
+		}
 		// #endif
 		return this
 	}
 
 	run(fn) {
 		// #ifndef APP-NVUE
-		this.$.animationData = this.animation.export()
-		this.$.timer = setTimeout(() => {
+		if (this.$) {
+			this.$.animationData = this.animation.export()
+			this.$.timer = setTimeout(() => {
+				typeof fn === 'function' && fn()
+			}, this.$.durationTime)
+		} else {
 			typeof fn === 'function' && fn()
-		}, this.$.durationTime)
+		}
 		// #endif
 		// #ifdef APP-NVUE
 		this.isEnd = false
+		if (!this.$) {
+			typeof fn === 'function' && fn()
+			return
+		}
 		let ref = this.$.$refs['ani'] && this.$.$refs['ani'].ref
-		if(!ref) return
+		if(!ref) {
+			typeof fn === 'function' && fn()
+			return
+		}
 		this._nvueNextAnimate(this.currentStepAnimates, 0, fn)
 		this.next = 0
 		// #endif
@@ -122,7 +142,13 @@ animateTypes1.concat(animateTypes2, animateTypes3).forEach(type => {
 })
 
 export function createAnimation(option, _this) {
-	if(!_this) return
+	if(!_this) {
+		// 返回一个空对象，避免调用方出错
+		return {
+			step: function() { return this; },
+			run: function(fn) { typeof fn === 'function' && fn(); }
+		};
+	}
 	clearTimeout(_this.timer)
 	return new MPAnimation(option, _this)
 }

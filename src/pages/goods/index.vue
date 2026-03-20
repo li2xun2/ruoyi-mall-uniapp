@@ -262,7 +262,9 @@
       console.log('商品数据：', res)
       state.skeletonLoading = false;
       state.goodsInfo = res;
-      state.goodsSwiper = formatGoodsSwiper(state.goodsInfo.product.albumPics.split(','));
+      // 确保albumPics是字符串才调用split方法
+      const albumPics = state.goodsInfo.product.albumPics;
+      state.goodsSwiper = formatGoodsSwiper(typeof albumPics === 'string' ? albumPics.split(',') : []);
       let totalStock = 0;
       res.skus.forEach(it=>{
         totalStock += it.stock;
