@@ -863,14 +863,14 @@ const app = defineStore({
                                         "text": "",
                                         "color": "#bbb"
                                     },
-                                    "url": "\/pages\/chat\/index",
+                                    "url": "\/pages\/user\/customer-service",
                                     "badge": {
                                         "show": 0,
                                         "text": "",
                                         "color": "#FFFFFF",
                                         "bgColor": "#FF6000"
                                     },
-                                    finish: true
+                                    "finish": true
                                 },
                                 {
                                     "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/customer_service.png",

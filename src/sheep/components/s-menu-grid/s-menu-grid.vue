@@ -49,8 +49,6 @@ const handleGo = (item) => {
     uni.showToast({
       title: '缓存清除成功',
     });
-  } else if (item.title.text === '联系客服') {
-    showAuthModal('contact','center')
   } else if ((item.finish)) {
     sheep.$router.go(item.url)
   } else {

@@ -6,6 +6,7 @@
       scroll-y 
       :scroll-top="scrollTop"
       @scroll="onScroll"
+      style="flex: 1;"
     >
       <!-- 欢迎消息 -->
       <view v-if="messages.length === 0" class="welcome-message">
@@ -212,9 +213,9 @@
 
 <style lang="scss" scoped>
   .ai-service-wrap {
-    height: 100vh;
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
   
   .chat-content {
@@ -222,6 +223,7 @@
     padding: 20rpx;
     background-color: #f5f5f5;
     overflow-y: auto;
+    min-height: 0;
   }
   
   .welcome-message {

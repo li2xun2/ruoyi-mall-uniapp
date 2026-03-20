@@ -25,7 +25,7 @@
             dotStyle="tag"
             imageMode="widthFix"
             dotCur="bg-mask-40"
-            :seizeHeight="750"
+            :seizeHeight="500"
           />
 
           <!-- 价格+标题 -->
@@ -268,6 +268,13 @@
         totalStock += it.stock;
       })
       state.goodsInfo.totalStock = totalStock;
+      // 获取收藏状态
+      sheep.$api.user.favorite.status(state.goodsId).then((res) => {
+        // 检查后端返回的响应格式
+        if (res && (res.code === 200 || res.error === 0)) {
+          state.goodsInfo.favorite = res.data || res;
+        }
+      });
     });
     // const { error, data } = await sheep.$api.coupon.listByGoods(state.goodsId);
     // if (error === 0) {

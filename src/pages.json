@@ -471,6 +471,18 @@
             "auth": true,
             "title": "积分兑换记录"
           }
+        },
+        {
+          "path": "customer-service",
+          "style": {
+            "navigationBarTitleText": "人工客服"
+          },
+          "meta": {
+            "auth": true,
+            "sync": true,
+            "title": "人工客服",
+            "group": "用户中心"
+          }
         }
       ]
     },

@@ -126,15 +126,19 @@
     uni.setStorageSync('tabbar', e);
   };
   async function onFavorite() {
-    sheep.$helper.toast('功能暂未开发')
-    // const { error } = await sheep.$api.user.favorite.do(props.modelValue.id);
-    // if (error === 0) {
-    //   if (props.modelValue.favorite) {
-    //     props.modelValue.favorite = 0;
-    //   } else {
-    //     props.modelValue.favorite = 1;
-    //   }
-    // }
+    try {
+      const response = await sheep.$api.user.favorite.do(props.modelValue.id);
+      // 检查后端返回的响应格式
+      if (response && (response.code === 200 || response.error === 0)) {
+        if (props.modelValue.favorite) {
+          props.modelValue.favorite = 0;
+        } else {
+          props.modelValue.favorite = 1;
+        }
+      }
+    } catch (error) {
+      console.error('收藏操作失败:', error);
+    }
   }
 
   const onChat = () => {

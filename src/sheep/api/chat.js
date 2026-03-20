@@ -8,6 +8,7 @@ export default {
       custom: {
         showError: false,
         showLoading: false,
+        auth: false
       },
     }),
 };

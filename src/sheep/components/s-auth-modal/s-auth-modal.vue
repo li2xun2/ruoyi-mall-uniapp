@@ -28,7 +28,7 @@
 
 <!--      联系客服-->
       <view v-if="authType === 'contact'">
-        <mp-html class="contact-content" :content="contact"></mp-html>
+        <mp-html class="contact-content" :content="typeof contact === 'string' ? contact : ''"></mp-html>
       </view>
 
       <!-- 第三方登录 -->
@@ -129,7 +129,7 @@ import {computed, onMounted, reactive, ref, watch} from 'vue';
 
   const modalStore = sheep.$store('modal');
 
-  const contact = ref({})
+  const contact = ref('')
   // 授权弹窗类型
   const authType = computed(() => modalStore.auth);
   const type = computed(() => modalStore.type);
@@ -176,7 +176,12 @@ import {computed, onMounted, reactive, ref, watch} from 'vue';
         //获取客服信息
         if(authType.value === 'contact') {
           const res = await sheep.$api.data.getSysConfig({configKey:'mall.contact'});
-          contact.value = res.data || {configValue: ''}
+          // 确保contact.value是字符串
+          if (typeof res.data === 'object' && res.data !== null) {
+            contact.value = res.data.configValue || ''
+          } else {
+            contact.value = res.data || ''
+          }
         }
         preAuthType.value = 'contact'
       },

@@ -295,13 +295,21 @@ export default {
       }),
     cancel: (id) =>
       request({
-        url: 'user/goodsLog/favorite',
+        url: 'user/goodsLog/favorite/cancel',
         method: 'POST',
         data: {
           goods_ids: id,
         },
         custom: {
           showSuccess: true,
+          auth: true,
+        },
+      }),
+    status: (id) =>
+      request({
+        url: `user/goodsLog/favorite/status/${id}`,
+        method: 'GET',
+        custom: {
           auth: true,
         },
       }),

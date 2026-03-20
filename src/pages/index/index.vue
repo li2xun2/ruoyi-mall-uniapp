@@ -2,34 +2,34 @@
   <s-layout title="首页" navbar="custom" tabbar="/pages/index/index" :navbarStyle="template.style?.navbar"
 			onShareAppMessage>
 			<!--轮播图 -->
-			<!--      <view class="banner-content">-->
-			<!--        <swiper class="swiper-content" :indicator-dots="true" :autoplay="true">-->
-			<!--          <swiper-item v-for="it in bannerList" :key="it.id" @tap="clickBanner(it)">-->
-			<!--            <image :src="it.src" class="img"/>-->
-			<!--          </swiper-item>-->
-			<!--        </swiper>-->
-			<!--      </view>-->
+			<view class="banner-content">
+				<swiper class="swiper-content" :indicator-dots="true" :autoplay="true">
+					<swiper-item v-for="it in bannerList" :key="it.id" @tap="clickBanner(it)">
+						<image :src="it.src" class="img"/>
+					</swiper-item>
+				</swiper>
+			</view>
 
 			<!-- 分类 -->
-			<!--      <view class="category-content">-->
-			<!--        <view class="category-item" v-for="(it,idx) in categoryList"-->
-			<!--              @tap="sheep.$router.go('/pages/goods/list', { categoryId: it.id })">-->
-			<!--          <image :src="it.icon" class="ct-icon"/>-->
-			<!--          <view class="ct-text">{{it.name}}</view>-->
-			<!--        </view>-->
-			<!--      </view>-->
+			<view class="category-content">
+				<view class="category-item" v-for="(it,idx) in categoryList"
+				      @tap="sheep.$router.go('/pages/goods/list', { categoryId: it.id })">
+					<image :src="it.icon" class="ct-icon"/>
+					<view class="ct-text">{{it.name}}</view>
+				</view>
+			</view>
 
 			<!-- 广告模块 -->
-			<!--      <s-popup-image />-->
-			<!--      <view class="icon-text">-->
-			<!--        <view class="text-info">-->
-			<!--          <view class="left"></view>-->
-			<!--          <view class="center">-->
-			<!--            推荐商品-->
-			<!--          </view>-->
-			<!--          <view class="right"></view>-->
-			<!--        </view>-->
-			<!--      </view>-->
+			<s-popup-image />
+			<view class="icon-text">
+				<view class="text-info">
+					<view class="left"></view>
+					<view class="center">
+						推荐商品
+					</view>
+					<view class="right"></view>
+				</view>
+			</view>
 			<view class="goods-block">
 				<s-goods-card :data="goodsCard.data" :styles="goodsCard.style"/>
 			</view>
@@ -55,6 +55,7 @@ import {
 	//#endif
 
 	const categoryList = ref([])
+	const bannerList = ref([])
 	const goodsCard = {
 		"data": {
 			"mode": 2,
@@ -145,6 +146,7 @@ import {
       sheep.$router.go(decodeURIComponent(options.page));
     }
     getCategoryList()
+    getBannerList()
     //#ifdef H5
     setOpenShare()
     //#endif
@@ -193,6 +195,36 @@ import {
 			categoryList.value = res
 		})
 	}
+
+	// 获取轮播图数据
+	function getBannerList() {
+		// 从商品列表获取轮播图数据，取前5个商品的图片
+		sheep.$api.goods.list({}, { size: 5 }).then(res => {
+			if (res && res.length > 0) {
+				bannerList.value = res.map((item, index) => ({
+					id: index + 1,
+					src: item.pic,
+					link: `/pages/goods/index?id=${item.id}`
+				}));
+			}
+		}).catch(() => {
+			// 如果获取商品失败，使用默认轮播图
+			bannerList.value = [
+				{ id: 1, src: 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/d8590190-4f28-11eb-b680-7980c8a877b8.png', link: '' },
+				{ id: 2, src: 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/d8590190-4f28-11eb-b680-7980c8a877b8.png', link: '' },
+				{ id: 3, src: 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/d8590190-4f28-11eb-b680-7980c8a877b8.png', link: '' },
+				{ id: 4, src: 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/d8590190-4f28-11eb-b680-7980c8a877b8.png', link: '' },
+				{ id: 5, src: 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/d8590190-4f28-11eb-b680-7980c8a877b8.png', link: '' }
+			];
+		});
+	}
+
+	// 轮播图点击事件
+	function clickBanner(item) {
+		if (item.link) {
+			sheep.$router.go(item.link)
+		}
+	}
 </script>
 
 <style lang="scss" scoped>
@@ -213,6 +245,21 @@ import {
     border-radius: 35rpx;
     font-weight: 400;
     color: #595959;
+  }
+
+  /* 轮播图样式 */
+  .banner-content {
+    margin: 0 20rpx 20rpx 20rpx;
+    border-radius: 10rpx;
+    overflow: hidden;
+  }
+  .swiper-content {
+    width: 100%;
+    height: 300rpx;
+  }
+  .img {
+    width: 100%;
+    height: 100%;
   }
 	.goods-block {
     /* #ifdef MP-WEIXIN */
