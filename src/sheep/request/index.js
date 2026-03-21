@@ -177,7 +177,10 @@ http.interceptors.request.use(
           },
         });
     }
-    if (token) config.header['Authorization'] = 'Bearer ' + token;
+    if (token) {
+      config.header['Authorization'] = 'Bearer ' + token;
+      console.log('设置请求头 Authorization:', 'Bearer ' + token);
+    }
     console.log('请求头:', config.header);
     return config;
   },
