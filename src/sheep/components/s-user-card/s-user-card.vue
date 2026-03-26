@@ -7,8 +7,8 @@
           <image
             class="avatar-img"
             :src="
-              isLogin && userInfo?.data?.avatar
-                ? sheep.$url.cdn(userInfo.data.avatar)
+              isLogin && userInfo?.avatar
+                ? sheep.$url.cdn(userInfo.avatar)
                 : sheep.$url.static('https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/default_avatar.png')
             "
             mode="aspectFill"
@@ -17,18 +17,14 @@
         </view>
         <view>
           <view class="nickname-box ss-flex ss-col-center">
-            <view class="nick-name ss-m-r-20" @tap="isLogin && goToEditInfo()">{{ userInfo?.data?.nickname || nickname }}</view>
+            <view class="nick-name ss-m-r-20" @tap="isLogin && goToEditInfo()">{{ userInfo?.nickname || nickname }}</view>
             <button v-if="isLogin" class="ss-reset-button edit-btn" @tap="goToEditInfo()">
               <text class="sicon-edit"></text>
             </button>
           </view>
         </view>
       </view>
-      <view class="right-box ss-m-r-52">
-        <button class="ss-reset-button" @tap="sheep.$helper.toast('功能暂未开发')">
-          <text class="sicon-qrcode"></text>
-        </button>
-      </view>
+   
     </view>
 
 <!--    <view-->

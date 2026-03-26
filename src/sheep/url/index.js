@@ -1,5 +1,5 @@
 import $store from '@/sheep/store';
-import { staticUrl } from '@/sheep/config';
+import { staticUrl, baseUrl } from '@/sheep/config';
 
 const cdn = (url = '', cdnurl = '') => {
   if (!url) return '';
@@ -7,7 +7,19 @@ const cdn = (url = '', cdnurl = '') => {
     return url;
   }
   if (cdnurl === '') {
-    cdnurl = $store('app').info.cdnurl;
+    cdnurl = $store('app').info.cdnurl || '';
+  }
+  // 如果cdnurl为空，使用baseUrl作为默认值
+  if (cdnurl === '') {
+    cdnurl = baseUrl;
+  }
+  // 确保url以/开头
+  if (url.indexOf('/') !== 0) {
+    url = '/' + url;
+  }
+  // 确保cdnurl不以/结尾，避免拼接后出现//
+  if (cdnurl.endsWith('/')) {
+    cdnurl = cdnurl.slice(0, -1);
   }
   return cdnurl + url;
 };
@@ -26,6 +38,21 @@ export default {
     }
     if (staticurl !== 'local') {
       url = cdn(url, staticurl);
+    } else {
+      // 本地静态资源，确保使用正确的路径
+      if (url.indexOf('http') === 0) {
+        return url;
+      }
+      // 确保url以/开头
+      if (url.indexOf('/') !== 0) {
+        url = '/' + url;
+      }
+      // 使用baseUrl作为前缀
+      let base = baseUrl;
+      if (base.endsWith('/')) {
+        base = base.slice(0, -1);
+      }
+      return base + url;
     }
     return url;
   },

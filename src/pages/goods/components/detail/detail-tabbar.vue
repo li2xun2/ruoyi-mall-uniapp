@@ -7,7 +7,7 @@
           class="detail-tabbar-item ss-flex ss-flex-col ss-row-center ss-col-center"
           @tap="onFavorite"
         >
-          <block v-if="modelValue.favorite">
+          <block v-if="modelValue.favorite === 0">
             <image
               class="item-icon"
               :src="sheep.$url.static('/icons/collect_1.gif')"
@@ -127,17 +127,26 @@
   };
   async function onFavorite() {
     try {
+      // 检查商品ID是否存在
+      if (!props.modelValue || !props.modelValue.id) {
+        sheep.$helper.toast('商品信息不完整，无法收藏');
+        return;
+      }
+      
       const response = await sheep.$api.user.favorite.do(props.modelValue.id);
       // 检查后端返回的响应格式
       if (response && (response.code === 200 || response.error === 0)) {
-        if (props.modelValue.favorite) {
-          props.modelValue.favorite = 0;
-        } else {
+        if (props.modelValue.favorite === 0) {
           props.modelValue.favorite = 1;
+        } else {
+          props.modelValue.favorite = 0;
         }
+      } else if (response === false) {
+        sheep.$helper.toast('商品不存在，无法收藏');
       }
     } catch (error) {
       console.error('收藏操作失败:', error);
+      sheep.$helper.toast('收藏操作失败，请稍后重试');
     }
   }
 

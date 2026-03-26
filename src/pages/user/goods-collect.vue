@@ -34,27 +34,27 @@
           <view class="ss-flex ss-col-center">
             <radio-group
               class="check-box ss-flex ss-col-center ss-p-l-10"
-              @change="onSelect(item.goods_id)"
+              @change="onSelect(item.goodsId)"
               v-show="state.editMode"
             >
               <label class="radio">
                 <radio
-                  :checked="state.selectedCollectList.includes(item.goods_id)"
+                  :checked="state.selectedCollectList.includes(item.goodsId)"
                   color="var(--ui-BG-Main)"
                   style="transform: scale(0.8)"
                 />
               </label>
             </radio-group>
             <s-goods-item
-              :title="item.goods.title"
-              :img="item.goods.image"
-              price="666"
-              skuText="123"
+              :title="item.goodsName"
+              :img="item.goodsImage"
+              :price="item.goodsPrice"
+              skuText=""
               priceColor="#FF3000"
               :titleWidth="400"
               @tap="
                 sheep.$router.go('/pages/goods/index', {
-                  id: item.goods_id,
+                  id: item.goodsId,
                 })
               "
             >
@@ -127,21 +127,36 @@
 
   async function getData(page = 1, list_rows = 6) {
     state.loadStatus = 'loading';
-    let res = await sheep.$api.user.favorite.list({
-      list_rows,
-      page,
-    });
-    if (res.error === 0) {
-      let orderList = _.concat(state.pagination.data, res.data.data);
-      state.pagination = {
-        ...res.data,
-        data: orderList,
-      };
-      if (state.pagination.current_page < state.pagination.last_page) {
-        state.loadStatus = 'more';
+    try {
+      let res = await sheep.$api.user.favorite.list({
+        list_rows,
+        page,
+      });
+      // 同时支持两种响应格式
+      if (res && (res.code === 200 || res.error === 0)) {
+        // 处理响应数据，兼容不同格式
+        const responseData = res.data || res;
+        let orderList = _.concat(state.pagination.data, responseData.data);
+        state.pagination = {
+          ...responseData,
+          data: orderList,
+        };
+        if (state.pagination.current_page < state.pagination.last_page) {
+          state.loadStatus = 'more';
+        } else {
+          state.loadStatus = 'noMore';
+        }
       } else {
+        // 请求失败，显示暂无收藏
+        state.pagination.total = 0;
+        state.pagination.data = [];
         state.loadStatus = 'noMore';
       }
+    } catch (error) {
+      // 捕获错误，显示暂无收藏
+      state.pagination.total = 0;
+      state.pagination.data = [];
+      state.loadStatus = 'noMore';
     }
   }
   // 格式化价格
@@ -165,18 +180,19 @@
       state.selectedCollectList = [];
     } else {
       state.pagination.data.forEach((item) => {
-        if (state.selectedCollectList.includes(item.goods_id)) {
-          state.selectedCollectList.splice(state.selectedCollectList.indexOf(item.goods_id), 1);
+        if (state.selectedCollectList.includes(item.goodsId)) {
+          state.selectedCollectList.splice(state.selectedCollectList.indexOf(item.goodsId), 1);
         }
-        state.selectedCollectList.push(item.goods_id);
+        state.selectedCollectList.push(item.goodsId);
       });
     }
   };
   async function onCancel() {
     if (state.selectedCollectList) {
       state.selectedCollectList = state.selectedCollectList.toString();
-      const { error } = await sheep.$api.user.favorite.cancel(state.selectedCollectList);
-      if (error === 0) {
+      const res = await sheep.$api.user.favorite.cancel(state.selectedCollectList);
+      // 同时支持两种响应格式
+      if (res && (res.code === 200 || res.error === 0)) {
         state.editMode = false;
         state.selectedCollectList = [];
         state.selectAll = false;

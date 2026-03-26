@@ -127,9 +127,9 @@ http.interceptors.request.use(
       console.log('同步后 userStore.isLogin:', userStore.isLogin);
     }
     
-    // 特殊处理：如果请求的是获取会员信息，并且本地存储中有 token，就允许这个请求通过
-    if (config.custom.auth && config.url.includes('h5/member/info') && token) {
-      console.log('请求 /h5/member/info 需要认证，本地存储中有 token，允许请求通过');
+    // 特殊处理：如果请求需要认证，并且本地存储中有 token，就允许这个请求通过
+    if (config.custom.auth && token) {
+      console.log('请求需要认证，本地存储中有 token，允许请求通过');
       config.header['Authorization'] = 'Bearer ' + token;
       console.log('设置请求头 Authorization:', 'Bearer ' + token);
       return config;

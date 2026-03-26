@@ -5,14 +5,17 @@
       <view class="title ss-m-l-20 ss-m-r-20">详情</view>
     </view>
     <view class="card-content">
-      <mp-html :content="content"></mp-html>
+      <mp-html :content="content" :domain="domain"></mp-html>
     </view>
   </view>
 </template>
 
 <script setup>
   import sheep from '@/sheep';
+  import { baseUrl } from '@/sheep/config';
   const { safeAreaInsets } = sheep.$platform.device;
+
+  const domain = baseUrl;
 
   const props = defineProps({
     content: {

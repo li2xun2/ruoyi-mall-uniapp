@@ -280,6 +280,10 @@ export default {
         url: 'user/goodsLog/favorite',
         method: 'GET',
         params,
+        custom: {
+          showError: false,
+          auth: true,
+        },
       }),
     do: (id) =>
       request({

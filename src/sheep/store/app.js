@@ -755,7 +755,7 @@ const app = defineStore({
                                         "color": "#FFFFFF",
                                         "bgColor": "#FF6000"
                                     },
-                                    finish: false
+                                    finish: true
                                 },
                                 {
                                     "src": "https://git-open.oss-cn-shenzhen.aliyuncs.com/ruoyi-mall/uniapp/icons/footprints.png",

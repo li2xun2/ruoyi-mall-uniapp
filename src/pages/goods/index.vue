@@ -262,6 +262,8 @@
       console.log('商品数据：', res)
       state.skeletonLoading = false;
       state.goodsInfo = res;
+      // 确保商品信息中包含id字段
+      state.goodsInfo.id = state.goodsId;
       // 确保albumPics是字符串才调用split方法
       const albumPics = state.goodsInfo.product.albumPics;
       state.goodsSwiper = formatGoodsSwiper(typeof albumPics === 'string' ? albumPics.split(',') : []);
